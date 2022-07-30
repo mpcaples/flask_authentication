@@ -23,17 +23,18 @@ class User(db.Model):
 
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST'])
 def register(): 
     if request.method == 'POST':
-        username = request.args.get('username')
-        email = request.args.get('email')
+        
+        username = request.json['username']
+        email = request.json['email']
         db_email = User.query.filter_by(email=email).first()
         if db_email != None: 
             return 'This user is already registered'
         else: 
             salt = bcrypt.gensalt()
-            bytes_pw = request.args.get('password').encode('utf-8')
+            bytes_pw = request.json['password'].encode('utf-8')
             hash_pw = bcrypt.hashpw(bytes_pw, salt) 
             user = User(username=username, email=email, salt=salt, hash_pw=hash_pw)
 
@@ -42,16 +43,16 @@ def register():
             return 'You submitted a user'
     return 'Sorry, there was an error - unable to add user.'
 
-@app.route('/login', methods=['GET', 'POST'])        
+@app.route('/login', methods=['POST'])        
 def login(): 
     if request.method == 'POST':
         # username = request.args.get('username')
-        email = request.args.get('email')
+        email = request.json['email']
         db_email = User.query.filter_by(email=email).first()
         if db_email != None: 
             # retrieve stored salt from db
             salt = User.query.filter_by(email=email).first().salt
-            bytes_pw = request.args.get('password').encode('utf-8')
+            bytes_pw = request.json['password'].encode('utf-8')
             hash_pw = bcrypt.hashpw(bytes_pw, salt) 
             # retrieve password from the db that matches the email submitted in the request 
             db_pw = User.query.filter_by(email=email).first().hash_pw
